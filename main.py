@@ -1,9 +1,12 @@
 import numpy as np
 import pygame
+import math
+import random
 from PIL import Image
 from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
+from helpers import vectorFromAngle
 
 
 def main():
@@ -11,6 +14,10 @@ def main():
     """
     # Segmentos y fuentes
     segments = [
+        Segment(Point(0, 0), Point(500, 0), False),
+        Segment(Point(0, 0), Point(0, 500), False),
+        Segment(Point(0, 500), Point(500, 500), False),
+        Segment(Point(500, 500), Point(500, 0), False),
         Segment(Point(180, 135), Point(215, 135), False),
         Segment(Point(285, 135), Point(320, 135), False),
         Segment(Point(320, 135), Point(320, 280), False),
@@ -22,7 +29,6 @@ def main():
         Segment(Point(180, 250), Point(180, 135), False),
     ]
     sources = [Point(250, 250)]
-
     # Crear ventana
     HEIGHT, WIDTH = 500, 500
     border = 50
@@ -38,17 +44,27 @@ def main():
     # Desplegar imagen
     surface = pygame.surfarray.make_surface(img_ref)
     screen.blit(surface, (border, border))
-
     # Crear segmentos
     Color = [0, 0, 0]
     for segment in segments:
         pygame.draw.line(window, Color, (segment.point1.x,
                                          segment.point1.y), (segment.point2.x, segment.point2.y), 4)
     pygame.draw.circle(window, Color, (sources[0].x, sources[0].y), 2, 1)
-
-    pygame.draw.line(
-        window, Color, (sources[0].x, sources[0].y), (sources[0].x + 10, sources[0].y), 1)
-
+    # Crear el rayo
+    for i in range(-360, 1, 1):
+        ray = Ray(sources[0], math.radians(i))
+        closest = None
+        record = 100000000000000000
+        for wall in segments:
+            point = ray.cast(wall)
+            if point != -1.0:
+                dist = ray.raySegmentIntersect(wall)
+                if dist < record:
+                    record = dist
+                    closest = point
+        if isinstance(closest, Point):
+            pygame.draw.line(window, Color, (sources[0].x,
+                                             sources[0].y), (closest.x, closest.y), 1)
     # Main loop
     while True:
         for event in pygame.event.get():
