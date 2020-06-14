@@ -15,3 +15,9 @@ class Segment:
 
     def getPoint2(self):
         return self.point2
+
+    def setEspecularidad(self, especularidad):
+        self.especularidad = especularidad
+
+    def getEspecularidad(self):
+        return self.especularidad
