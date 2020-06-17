@@ -2,13 +2,12 @@ import numpy as np
 import pygame
 import math
 import random
+import threading
 from PIL import Image
 from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
-import threading
-from helpers import vectorFromAngle
-
+from helpers import getLenght
 def rayTrace():
     for i in range(0, 3, 1):
         ray = Ray(sources[0], math.radians(0))
@@ -24,7 +23,15 @@ def rayTrace():
         if isinstance(closest, Point):
             pygame.draw.line(window,Color,(sources[0].x,sources[0].y),(closest.x,closest.y),2)
             print(imagen[int(closest.x)][int(closest.y)])
-
+def render(canvas,samples):
+    for i in range(len(canvas)):
+        for u in range(len(canvas)):
+            for o in range(samples):
+                rayito=Ray(sources[0],math.radians(random.uniform(0,360)))
+                np.add(canvas[i][u], pathTrace(rayito,0,2), out=canvas[i][u], casting="unsafe")
+            canvas[i][u]= canvas[i][u]/samples
+        print("x=", i)
+    print(canvas)
 def pathTrace(ray,depth,maxDepth):
     Color2=[random.uniform(0,255),random.uniform(0,255),random.uniform(0,255)]
     #print(depth)
@@ -33,17 +40,23 @@ def pathTrace(ray,depth,maxDepth):
         punto=infoIntersec[0]
         pared=infoIntersec[1]
         if punto==-1.0:
-            print("No chocó")
-            return
+            return np.array([0,0,0])
+        for source in sources:
+            if source.x==punto.x and source.y==punto.y:
+                return [imagen[source.x][source.y][:3]]
         rebote=anguloRebote(ray,punto,pared,depth)
-        canvas[int(punto.x)-1][int(punto.y)-1]=Color2
-        pygame.draw.line(screen,Color,(ray.origen.x,ray.origen.y),(punto.x,punto.y),2)
-        pathTrace(rebote,depth+1,maxDepth)
-    return
+        #pygame.draw.line(screen,Color,(ray.origen.x,ray.origen.y),(punto.x,punto.y),2)
+        color_incoming=pathTrace(rebote,depth+1,maxDepth)
+        distancia=getLenght(ray.origen,punto)
+        intensity = (1 - (distancia / 500)) ** 2
+        value=imagen[int(punto.x)-1][int(punto.y)-1][:3]*intensity*color_incoming
+        print(color_incoming)
+        return value
+    return np.array([0,0,0])
 def randomPathTrace(depth,maxDepth):
-    for i in range(5000):
+    for i in range(1):
         ray = Ray(sources[0], math.radians(random.uniform(-360, 0)))
-        pathTrace(ray,depth,maxDepth)
+        color_incoming=pathTrace(ray,depth,maxDepth)
 def anguloRebote(ray,punto,pared,depth):
     if pared.horizontal:
         if ray.origen.y>punto.y:
@@ -102,17 +115,18 @@ def main():
                                          segment.point1.y), (segment.point2.x, segment.point2.y), 4)
     pygame.draw.circle(window, Color, (sources[0].x, sources[0].y), 2, 1)
     #Setup de los threads
-    t = threading.Thread(target=randomPathTrace,args=[0,1])  # f being the function that tells how the ball should move
+    t = threading.Thread(target=render,args=[canvas,2])  # f being the function that tells how the ball should move
     t.setDaemon(True)  # Alternatively, you can use "t.daemon = True"
     t.start()
-
     # Main loop
     done=False
     while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-        pygame.display.update()
+        screen.fill((255, 255, 255))
+        surface=pygame.surfarray.make_surface(canvas)
+        screen.blit(surface,(border,border))
 
 
 if __name__ == "__main__":
