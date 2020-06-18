@@ -41,12 +41,10 @@ class threadpinta(Thread):
             x=self.rr[i]
             y=self.cc[i]
             values = imagen[y][x][:3]
-            length = getLenght(sources[0], Point(x, y))
-            intensity = (1 - (length / 500)) ** 2
+            length = getLenght(sources[1], Point(x, y))
+            intensity = ((1 - (length / 500)) ** 2)/2
             values = values * intensity * light
             canvas[x][y] = values
-            # surface = pygame.surfarray.make_surface(canvas)
-            # screen.blit(surface, (border, border))
 
 
 def pathTrace(ray,depth,maxDepth):
@@ -59,14 +57,15 @@ def pathTrace(ray,depth,maxDepth):
             print("No chocó")
             return
         rebote=anguloRebote(ray,punto,pared,depth)
-        thread=threadBresenham(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1))
+        thread=threadBresenham(sources[1].x,sources[1].y,int(punto.x-1),int(punto.y-1))
 
         thread.start()
         pathTrace(rebote,depth+1,maxDepth)
     return
 def randomPathTrace(depth,maxDepth):
-    for i in range(6000):
-        ray = Ray(sources[0], math.radians(random.uniform(0,360)))
+    # for source in sources:
+    for i in np.arange(0,360,0.2):
+        ray = Ray(sources[1], math.radians(i))
         pathTrace(ray,depth,maxDepth)
     print("Termino")
 def anguloRebote(ray,punto,pared,depth):
@@ -165,7 +164,7 @@ if __name__ == "__main__":
     canvas = np.array(img_file)
     img_file = Image.open("assets/fondo.png")
     imagen = np.array(img_file)
-    sources = [Point(195, 200)]
+    sources = [ Point(195, 200), Point( 294, 200) ]
     # Crear ventana
     HEIGHT, WIDTH = 500, 500
     border = 0
