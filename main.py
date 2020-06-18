@@ -15,11 +15,18 @@ from threading import Thread
 from scene_elements import Point
 from helpers import *
 import pygame
-class MyThread(Thread):
-    """
-    A threading example
-    """
-
+class threadBresenham(Thread):
+    def __init__(self,sx,sy,ix,iy):
+        Thread.__init__(self)
+        self.sx=sx
+        self.sy=sy
+        self.ix=ix
+        self.iy=iy
+    def run(self):
+        rr, cc = line(self.sx,self.sy,self.ix,self.iy)
+        thread=threadpinta(rr,cc)
+        thread.start()
+class threadpinta(Thread):
     def __init__(self,rr,cc):
         """Initialize the thread"""
         Thread.__init__(self)
@@ -29,15 +36,18 @@ class MyThread(Thread):
 
     def run(self):
         for i in range(len(self.rr)):
-            if not np.array_equal(canvas[self.rr[len(self.rr)-6]][self.cc[len(self.rr)-6]], np.array([0,0,0])):
+            if not np.array_equal(canvas[self.rr[len(self.rr)-3]][self.cc[len(self.rr)-3]], np.array([0,0,0])):
                 break
-            values = imagen[self.cc[i]][self.rr[i]][:3]
-            length = getLenght(sources[0], Point(self.rr[i], self.cc[i]))
+            x=self.rr[i]
+            y=self.cc[i]
+            values = imagen[y][x][:3]
+            length = getLenght(sources[0], Point(x, y))
             intensity = (1 - (length / 500)) ** 2
             values = values * intensity * light
-            canvas[self.rr[i]][self.cc[i]] = values
-            surface = pygame.surfarray.make_surface(canvas)
-            screen.blit(surface, (border, border))
+            canvas[x][y] = values
+            # surface = pygame.surfarray.make_surface(canvas)
+            # screen.blit(surface, (border, border))
+
 
 def pathTrace(ray,depth,maxDepth):
     #print(depth)
@@ -49,16 +59,16 @@ def pathTrace(ray,depth,maxDepth):
             print("No chocó")
             return
         rebote=anguloRebote(ray,punto,pared,depth)
-        rr, cc = line(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1))
-        #pixeles=list(bresenham(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1)))
-        thread=MyThread(rr,cc)
+        thread=threadBresenham(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1))
+
         thread.start()
         pathTrace(rebote,depth+1,maxDepth)
     return
 def randomPathTrace(depth,maxDepth):
-    for i in range(5000):
+    for i in range(6000):
         ray = Ray(sources[0], math.radians(random.uniform(0,360)))
         pathTrace(ray,depth,maxDepth)
+    print("Termino")
 def anguloRebote(ray,punto,pared,depth):
     if pared.horizontal:
         if ray.origen.y>punto.y:
@@ -129,6 +139,8 @@ def main():
             if event.type == pygame.QUIT:
                 done = True
         pygame.display.update()
+        surface = pygame.surfarray.make_surface(canvas)
+        screen.blit(surface, (border, border))
 
 
 if __name__ == "__main__":
