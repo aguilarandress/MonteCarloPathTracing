@@ -29,7 +29,9 @@ class MyThread(Thread):
 
     def run(self):
         for i in range(len(self.rr)):
-            values = imagen[self.rr[i]][self.cc[i]][:3]
+            if not np.array_equal(canvas[self.rr[len(self.rr)-6]][self.cc[len(self.rr)-6]], np.array([0,0,0])):
+                break
+            values = imagen[self.cc[i]][self.rr[i]][:3]
             length = getLenght(sources[0], Point(self.rr[i], self.cc[i]))
             intensity = (1 - (length / 500)) ** 2
             values = values * intensity * light
@@ -38,7 +40,6 @@ class MyThread(Thread):
             screen.blit(surface, (border, border))
 
 def pathTrace(ray,depth,maxDepth):
-    Color2=[random.uniform(0,255),random.uniform(0,255),random.uniform(0,255)]
     #print(depth)
     if depth<=maxDepth:
         infoIntersec=hitSomething(ray)
@@ -52,23 +53,6 @@ def pathTrace(ray,depth,maxDepth):
         #pixeles=list(bresenham(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1)))
         thread=MyThread(rr,cc)
         thread.start()
-        # for i in range(len(rr)):
-        #     values = imagen[rr[i]][cc[i]][:3]
-        #     length = getLenght(sources[0], Point(rr[i],cc[i]))
-        #     intensity = (1 - (length / 500)) ** 2
-        #     values = values * intensity * light
-        #     canvas[rr[i]][cc[i]] = values
-        #     surface = pygame.surfarray.make_surface(canvas)
-        #     screen.blit(surface, (border, border))
-        # for pixel in pixeles:
-        #     values=imagen[pixel[0]][pixel[1]][:3]
-        #     length= getLenght(sources[0],Point(pixel[0],pixel[1]))
-        #     intensity = (1 - (length / 500)) ** 2
-        #     values = values * intensity * light
-        #     canvas[pixel[0]][pixel[1]]=values
-        #     surface = pygame.surfarray.make_surface(canvas)
-        #     screen.blit(surface, (border, border))
-        #pygame.draw.line(screen,Color,(ray.origen.x,ray.origen.y),(punto.x,punto.y),2)
         pathTrace(rebote,depth+1,maxDepth)
     return
 def randomPathTrace(depth,maxDepth):
@@ -148,7 +132,7 @@ def main():
 
 
 if __name__ == "__main__":
-    light = np.array([1, 1, 1])
+    light = np.array([1, 1, 0.75])
     Color = [0, 0, 0]
     segments = [
         Segment(Point(0, 0), Point(500, 0), True,False),
