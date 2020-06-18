@@ -24,26 +24,27 @@ class threadBresenham(Thread):
         self.iy=iy
     def run(self):
         rr, cc = line(self.sx,self.sy,self.ix,self.iy)
-        thread=threadpinta(rr,cc)
+        thread=threadpinta(rr,cc,Point(self.sx,self.sy))
         thread.start()
 class threadpinta(Thread):
-    def __init__(self,rr,cc):
+    def __init__(self,rr,cc,source):
         """Initialize the thread"""
         Thread.__init__(self)
         self.rr = rr
         self.cc = cc
+        self.source = source
 
 
     def run(self):
         for i in range(len(self.rr)):
-            if not np.array_equal(canvas[self.rr[len(self.rr)-3]][self.cc[len(self.rr)-3]], np.array([0,0,0])):
-                break
+
             x=self.rr[i]
             y=self.cc[i]
             values = imagen[y][x][:3]
-            length = getLenght(sources[1], Point(x, y))
+            length = getLenght(self.source, Point(x, y))
             intensity = ((1 - (length / 500)) ** 2)/2
             values = values * intensity * light
+            values = np.add(canvas[x][y], values) / 2
             canvas[x][y] = values
 
 
@@ -57,17 +58,16 @@ def pathTrace(ray,depth,maxDepth):
             print("No chocó")
             return
         rebote=anguloRebote(ray,punto,pared,depth)
-        thread=threadBresenham(sources[1].x,sources[1].y,int(punto.x-1),int(punto.y-1))
-
+        thread=threadBresenham(ray.origen.x,ray.origen.y,int(punto.x-1),int(punto.y-1))
         thread.start()
         pathTrace(rebote,depth+1,maxDepth)
     return
 def randomPathTrace(depth,maxDepth):
-    # for source in sources:
-    for i in np.arange(0,360,0.2):
-        ray = Ray(sources[1], math.radians(i))
-        pathTrace(ray,depth,maxDepth)
-    print("Termino")
+    while True:
+      for source in sources:
+            ray = Ray(source, math.radians(random.uniform(0,360)))
+            pathTrace(ray,depth,maxDepth)
+
 def anguloRebote(ray,punto,pared,depth):
     if pared.horizontal:
         if ray.origen.y>punto.y:
@@ -143,7 +143,7 @@ def main():
 
 
 if __name__ == "__main__":
-    light = np.array([1, 1, 0.75])
+    light = np.array([1, 1, 1])
     Color = [0, 0, 0]
     segments = [
         Segment(Point(0, 0), Point(500, 0), True,False),
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     canvas = np.array(img_file)
     img_file = Image.open("assets/fondo.png")
     imagen = np.array(img_file)
-    sources = [ Point(195, 200), Point( 294, 200) ]
+    sources = [  Point( 294, 200),Point(195, 200)]
     # Crear ventana
     HEIGHT, WIDTH = 500, 500
     border = 0
