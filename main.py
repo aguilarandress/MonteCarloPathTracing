@@ -28,29 +28,15 @@ class MyThread(Thread):
 
 
     def run(self):
-        values = imagen[self.rr][self.cc][:3]
-        length = getLenght(sources[0], Point(self.rr, self.cc))
-        intensity = (1 - (length / 500)) ** 2
-        values = values * intensity * light
-        canvas[self.rr][self.cc] = values
-        surface = pygame.surfarray.make_surface(canvas)
-        screen.blit(surface, (border, border))
+        for i in range(len(self.rr)):
+            values = imagen[self.rr[i]][self.cc[i]][:3]
+            length = getLenght(sources[0], Point(self.rr[i], self.cc[i]))
+            intensity = (1 - (length / 500)) ** 2
+            values = values * intensity * light
+            canvas[self.rr[i]][self.cc[i]] = values
+            surface = pygame.surfarray.make_surface(canvas)
+            screen.blit(surface, (border, border))
 
-def rayTrace():
-    for i in range(0, 3, 1):
-        ray = Ray(sources[0], math.radians(0))
-        closest = None
-        record = 100000000000000000
-        for wall in segments:
-            point = ray.cast(wall)
-            if point != -1.0:
-                dist = ray.raySegmentIntersect(wall)
-                if dist < record:
-                    record = dist
-                    closest = point
-        if isinstance(closest, Point):
-            pygame.draw.line(window,Color,(sources[0].x,sources[0].y),(closest.x,closest.y),2)
-            print(imagen[int(closest.x)][int(closest.y)])
 def pathTrace(ray,depth,maxDepth):
     Color2=[random.uniform(0,255),random.uniform(0,255),random.uniform(0,255)]
     #print(depth)
@@ -64,14 +50,16 @@ def pathTrace(ray,depth,maxDepth):
         rebote=anguloRebote(ray,punto,pared,depth)
         rr, cc = line(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1))
         #pixeles=list(bresenham(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1)))
-        for i in range(len(rr)):
-            values = imagen[rr[i]][cc[i]][:3]
-            length = getLenght(sources[0], Point(rr[i],cc[i]))
-            intensity = (1 - (length / 500)) ** 2
-            values = values * intensity * light
-            canvas[rr[i]][cc[i]] = values
-            surface = pygame.surfarray.make_surface(canvas)
-            screen.blit(surface, (border, border))
+        thread=MyThread(rr,cc)
+        thread.start()
+        # for i in range(len(rr)):
+        #     values = imagen[rr[i]][cc[i]][:3]
+        #     length = getLenght(sources[0], Point(rr[i],cc[i]))
+        #     intensity = (1 - (length / 500)) ** 2
+        #     values = values * intensity * light
+        #     canvas[rr[i]][cc[i]] = values
+        #     surface = pygame.surfarray.make_surface(canvas)
+        #     screen.blit(surface, (border, border))
         # for pixel in pixeles:
         #     values=imagen[pixel[0]][pixel[1]][:3]
         #     length= getLenght(sources[0],Point(pixel[0],pixel[1]))
@@ -85,7 +73,7 @@ def pathTrace(ray,depth,maxDepth):
     return
 def randomPathTrace(depth,maxDepth):
     for i in range(5000):
-        ray = Ray(sources[0], math.radians(random.uniform(-360, 0)))
+        ray = Ray(sources[0], math.radians(random.uniform(0,360)))
         pathTrace(ray,depth,maxDepth)
 def anguloRebote(ray,punto,pared,depth):
     if pared.horizontal:
@@ -145,10 +133,9 @@ def main():
                                          segment.point1.y), (segment.point2.x, segment.point2.y), 4)
     pygame.draw.circle(window, Color, (sources[0].x, sources[0].y), 2, 1)
     #Setup de los threads
-    t = threading.Thread(target=randomPathTrace,args=[0,1])  # f being the function that tells how the ball should move
+    t = threading.Thread(target=randomPathTrace,args=[0,0])  # f being the function that tells how the ball should move
     t.setDaemon(True)  # Alternatively, you can use "t.daemon = True"
     t.start()
-    #a=bresenhamline(np.array([250,250]),np.array([275,275]),max_iter=-1)
 
 
     # Main loop
@@ -178,7 +165,7 @@ if __name__ == "__main__":
         Segment(Point(320, 320), Point(360, 320), True,False),
         Segment(Point(180, 250), Point(180, 135), False,False),
     ]
-    img_file = Image.new("RGB", (500, 500), (255, 255, 255) )
+    img_file = Image.new("RGB", (500, 500), (0, 0, 0) )
     canvas = np.array(img_file)
     img_file = Image.open("assets/fondo.png")
     imagen = np.array(img_file)
