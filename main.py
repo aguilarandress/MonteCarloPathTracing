@@ -11,6 +11,31 @@ from helpers import *
 from bresenham import bresenham
 from skimage.draw import line
 
+from threading import Thread
+from scene_elements import Point
+from helpers import *
+import pygame
+class MyThread(Thread):
+    """
+    A threading example
+    """
+
+    def __init__(self,rr,cc):
+        """Initialize the thread"""
+        Thread.__init__(self)
+        self.rr = rr
+        self.cc = cc
+
+
+    def run(self):
+        values = imagen[self.rr][self.cc][:3]
+        length = getLenght(sources[0], Point(self.rr, self.cc))
+        intensity = (1 - (length / 500)) ** 2
+        values = values * intensity * light
+        canvas[self.rr][self.cc] = values
+        surface = pygame.surfarray.make_surface(canvas)
+        screen.blit(surface, (border, border))
+
 def rayTrace():
     for i in range(0, 3, 1):
         ray = Ray(sources[0], math.radians(0))
@@ -26,14 +51,6 @@ def rayTrace():
         if isinstance(closest, Point):
             pygame.draw.line(window,Color,(sources[0].x,sources[0].y),(closest.x,closest.y),2)
             print(imagen[int(closest.x)][int(closest.y)])
-def pintarPixel(rr,cc):
-    values = imagen[rr][cc][:3]
-    length = getLenght(sources[0], Point(rr, cc))
-    intensity = (1 - (length / 500)) ** 2
-    values = values * intensity * light
-    canvas[rr][cc] = values
-    surface = pygame.surfarray.make_surface(canvas)
-    screen.blit(surface, (border, border))
 def pathTrace(ray,depth,maxDepth):
     Color2=[random.uniform(0,255),random.uniform(0,255),random.uniform(0,255)]
     #print(depth)
@@ -48,10 +65,13 @@ def pathTrace(ray,depth,maxDepth):
         rr, cc = line(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1))
         #pixeles=list(bresenham(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1)))
         for i in range(len(rr)):
-            t = threading.Thread(target=pintarPixel,
-                                 args=[rr[i], cc[i]])  # f being the function that tells how the ball should move
-            t.setDaemon(False)  # Alternatively, you can use "t.daemon = True"
-            t.start()
+            values = imagen[rr[i]][cc[i]][:3]
+            length = getLenght(sources[0], Point(rr[i],cc[i]))
+            intensity = (1 - (length / 500)) ** 2
+            values = values * intensity * light
+            canvas[rr[i]][cc[i]] = values
+            surface = pygame.surfarray.make_surface(canvas)
+            screen.blit(surface, (border, border))
         # for pixel in pixeles:
         #     values=imagen[pixel[0]][pixel[1]][:3]
         #     length= getLenght(sources[0],Point(pixel[0],pixel[1]))
