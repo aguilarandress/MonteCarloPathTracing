@@ -9,6 +9,7 @@ verify_ssl = true
 numpy = "*"
 pillow = "*"
 pygame = "*"
+scikit-image = "*"
 
 [requires]
 python_version = "3.8"

@@ -7,7 +7,9 @@ from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
 import threading
-from helpers import vectorFromAngle
+from helpers import *
+from bresenham import bresenham
+from skimage.draw import line
 
 def rayTrace():
     for i in range(0, 3, 1):
@@ -24,7 +26,14 @@ def rayTrace():
         if isinstance(closest, Point):
             pygame.draw.line(window,Color,(sources[0].x,sources[0].y),(closest.x,closest.y),2)
             print(imagen[int(closest.x)][int(closest.y)])
-
+def pintarPixel(rr,cc):
+    values = imagen[rr][cc][:3]
+    length = getLenght(sources[0], Point(rr, cc))
+    intensity = (1 - (length / 500)) ** 2
+    values = values * intensity * light
+    canvas[rr][cc] = values
+    surface = pygame.surfarray.make_surface(canvas)
+    screen.blit(surface, (border, border))
 def pathTrace(ray,depth,maxDepth):
     Color2=[random.uniform(0,255),random.uniform(0,255),random.uniform(0,255)]
     #print(depth)
@@ -36,8 +45,22 @@ def pathTrace(ray,depth,maxDepth):
             print("No chocó")
             return
         rebote=anguloRebote(ray,punto,pared,depth)
-        canvas[int(punto.x)-1][int(punto.y)-1]=Color2
-        pygame.draw.line(screen,Color,(ray.origen.x,ray.origen.y),(punto.x,punto.y),2)
+        rr, cc = line(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1))
+        #pixeles=list(bresenham(sources[0].x,sources[0].y,int(punto.x-1),int(punto.y-1)))
+        for i in range(len(rr)):
+            t = threading.Thread(target=pintarPixel,
+                                 args=[rr[i], cc[i]])  # f being the function that tells how the ball should move
+            t.setDaemon(False)  # Alternatively, you can use "t.daemon = True"
+            t.start()
+        # for pixel in pixeles:
+        #     values=imagen[pixel[0]][pixel[1]][:3]
+        #     length= getLenght(sources[0],Point(pixel[0],pixel[1]))
+        #     intensity = (1 - (length / 500)) ** 2
+        #     values = values * intensity * light
+        #     canvas[pixel[0]][pixel[1]]=values
+        #     surface = pygame.surfarray.make_surface(canvas)
+        #     screen.blit(surface, (border, border))
+        #pygame.draw.line(screen,Color,(ray.origen.x,ray.origen.y),(punto.x,punto.y),2)
         pathTrace(rebote,depth+1,maxDepth)
     return
 def randomPathTrace(depth,maxDepth):
@@ -105,6 +128,8 @@ def main():
     t = threading.Thread(target=randomPathTrace,args=[0,1])  # f being the function that tells how the ball should move
     t.setDaemon(True)  # Alternatively, you can use "t.daemon = True"
     t.start()
+    #a=bresenhamline(np.array([250,250]),np.array([275,275]),max_iter=-1)
+
 
     # Main loop
     done=False
@@ -116,6 +141,7 @@ def main():
 
 
 if __name__ == "__main__":
+    light = np.array([1, 1, 1])
     Color = [0, 0, 0]
     segments = [
         Segment(Point(0, 0), Point(500, 0), True,False),
@@ -136,7 +162,7 @@ if __name__ == "__main__":
     canvas = np.array(img_file)
     img_file = Image.open("assets/fondo.png")
     imagen = np.array(img_file)
-    sources = [Point(250, 250)]
+    sources = [Point(195, 200)]
     # Crear ventana
     HEIGHT, WIDTH = 500, 500
     border = 0
