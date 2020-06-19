@@ -1,5 +1,5 @@
 from scene_elements.Point import Point
-from helpers import vectorFromAngle, normalize
+from helpers import vector_from_angle, normalize
 
 
 class Ray:
