@@ -8,7 +8,7 @@ def vector_from_angle(angle, origen):
 
 def length(v1):
     # assumes v1 starts at (0,0)
-    return math.sqrt(v1.x*v1.x + v1.y*v1.y)
+    return math.sqrt(v1.x * v1.x + v1.y * v1.y)
 
 
 def normalize(v1):
