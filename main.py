@@ -11,48 +11,6 @@ from helpers import length, ray_segment_intersect, normalize
 from threading import Thread
 import time
 from helpers import getLenght
-class threadCicloy(Thread):
-    def __init__(self,i):
-        Thread.__init__(self)
-        self.i=i
-    def run(self):
-        for j in range(len(canvas)):
-            # Obtener punto en la imagen
-            image_point = Point(self.i, j)
-            pixel_color = 0
-            for light_source in light_sources:
-                # Calcular direccion a la
-                direccion = light_source - image_point
-                light_distance = length(direccion)
-                # Verificar con interseccion en la pared
-                free = True
-                for wall in segments:
-                    # Revisar interseccion
-                    distancia_interseccion = ray_segment_intersect(
-                        image_point, normalize(direccion), wall.point1, wall.point2)
-                    # Verificar colision
-                    if distancia_interseccion != -1.0 and distancia_interseccion < light_distance:
-                        free = False
-                        break
-                # Verificar si no hay colision
-                if free:
-                    # Calcular intensidad
-                    intensidad = (1.2 - (light_distance / 500)) ** 2
-                    # Obtener color del pixel
-                    valores = (imagen[int(image_point.y)]
-                               [int(image_point.x)])[:3]
-                    # Combinar color, fuente de luz y color de la luz
-                    valores = valores * intensidad * light_color
-
-                    # Agregar todas las fuentes de luz
-                    pixel_color += valores
-                # Promedia pixel y asignar valor
-                canvas[int(image_point.x)][int(image_point.y)
-                                           ] = pixel_color // len(light_sources)
-
-            #TODO PATH TRACING O ILUMINACION INDIRECTA
-            t = threadPATH(image_point,pixel_color)
-            t.start()
 class threadPATH(Thread):
     mismopunto = 0
     def __init__(self,image_point,pixel_color):
@@ -144,8 +102,12 @@ def trace_path(rayo_actual, depth):
     # TODO FALTA IMPLEMENTAR ESTA FUNCION
     info_intersec=hitSomething(rayo_actual)
     punto = info_intersec[0]
+    constanteIntensi=1
     if punto == -1.0:
         return -1
+    pared=info_intersec[1]
+    if pared.especularidad:
+        constanteIntensi+=0.4
     distanciaPixWall=getLenght(rayo_actual.origen,punto)
     for source in light_sources:
         direccion=punto-source
@@ -154,25 +116,21 @@ def trace_path(rayo_actual, depth):
         info_intersec2=hitSomething(rayo_actual)
         punto=info_intersec2[0]
         if info_intersec2[1].horizontal:
-            if not ((punto.y > source.y and punto.y > rayo_actual.origen.y) or (punto.y < source.y and punto.y < rayo_actual.origen.y) ):
+            if  not (punto.y > source.y and punto.y > rayo_actual.origen.y) or not (punto.y < source.y and punto.y < rayo_actual.origen.y):
                 return -1.0
         else:
-            if not ((punto.x > source.x and punto.x > rayo_actual.origen.x) or (
-                    punto.x < source.x and punto.x < rayo_actual.origen.x)):
+            if  not (punto.x > source.x and punto.x > rayo_actual.origen.x) or not (punto.x < source.x and punto.x < rayo_actual.origen.x):
                 return  -1.0
         if info_intersec2[0].x==punto.x and info_intersec2[0].y == punto.y:
 
             distanciaWallSource=getLenght(ray.origen,info_intersec2[0])
             distanciatotal=distanciaPixWall+distanciaWallSource
-            intensidad =(1 - (distanciatotal / 500)) ** 2
+            intensidad =(constanteIntensi - (distanciatotal / 500)) ** 2
             colorWall2=np.array([color/100 for color in imagen[int(punto.y)][int(punto.x)][:3] ])
-
-
             refpix=imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
             values = refpix * intensidad * colorWall2
             return values
-
-
+        return -1.0
 
 
 
@@ -205,7 +163,8 @@ if __name__ == "__main__":
     light_sources = [Point(75, 424),Point(283, 427),Point(473, 424),
                      Point(75,328),Point(282,329),Point(473,328),
                      Point(75, 253), Point(282, 253), Point(473, 253),
-                     Point(29,473), Point(32,473),  Point(24,468)]
+                     Point(29,473), Point(32,473),  Point(24,468)
+                     ]
     # Color de la luz
     light_color = np.array([1, 1, 0.75])
     segments = [
@@ -222,7 +181,9 @@ if __name__ == "__main__":
         #Primer Piso
         # PISO 1
         Segment(Point(62, 489), Point(487, 489), True, False),
+        Segment(Point(62, 490), Point(487, 490), True, False),
         # PARED IZQUIERDA
+        Segment(Point(62, 489), Point(62, 402), False, False),
         Segment(Point(62, 489), Point(62, 402), False, False),
         # PARTE 1 TECHO PRIMER PISO
         Segment(Point(62, 402), Point(111, 402), True, False),
@@ -253,7 +214,7 @@ if __name__ == "__main__":
         Segment(Point(64, 307), Point(64, 392), False, False),
         #Tercer piso
         #Piso1
-        Segment(Point(112, 296 ),Point(64, 296),True,False),
+        Segment(Point(112, 296 ),Point(64, 296),True,True),
         #Pared I
         Segment(Point(64, 296), Point(64, 211), False, False),
         #Techo
