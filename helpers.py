@@ -18,8 +18,8 @@ def normalize(v1):
 
 
 def getLenght(punto1, punto2):
-    dx = abs((punto1.x - punto2.x))
-    dy = abs((punto1.y - punto2.y))
+    dx = abs((int(punto1.x) - int(punto2.x)))
+    dy = abs((int(punto1.y) - int(punto2.y)))
     return math.sqrt((dx ** 2) + (dy ** 2))
 
 
