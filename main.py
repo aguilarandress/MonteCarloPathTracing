@@ -3,14 +3,48 @@ import pygame
 import math
 import random
 import threading
+import time
 from PIL import Image
 from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
-from helpers import length, ray_segment_intersect, normalize
+from helpers import length, ray_segment_intersect, normalize,getLenght
 from threading import Thread
-import time
-from helpers import getLenght
+
+def anguloEspecular(ray, punto, pared):
+    return angulo_rebote(ray, punto, pared)
+
+def angulo_rebote(ray, punto, pared):
+    """Genera un anglo aleatorio en el segmento
+
+    Args:
+        ray (Ray): El rayo de entrada
+        punto (Point): Punto de interseccion en el segmento
+        pared (Segment): Segmento de interseccion
+
+    Returns:
+        Ray: Un nuevo rayo con origen y angulo aleatorio
+    """
+    if pared.horizontal:
+        if ray.origen.y > punto.y:
+            # pared inferior
+            angulo = math.radians(random.uniform(5, 175))
+            return angulo
+        else:
+            # pared superior
+            angulo = math.radians(random.uniform(-175, -5))
+            return angulo
+    else:
+        if ray.origen.x < punto.x:
+            # pared derecha
+            angulo = math.radians(random.uniform(-270, -90))
+            return angulo
+        else:
+            # pared izquierda
+            angulo = math.radians(random.uniform(-85, 85))
+            return angulo
+
+
 class threadPATH(Thread):
     mismopunto = 0
     def __init__(self,image_point,pixel_color):
@@ -19,18 +53,17 @@ class threadPATH(Thread):
         Thread.__init__(self)
         self.color=pixel_color
         self.image = image_point
-
-
-
     def run(self):
         rayosEfec=0
         for i in range(0, number_samples):
             # Iniciar rayos
             initial_ray = Ray(self.image, random.uniform(0, 360))
             # Iluminacion indirecta
-            incoming_color = trace_path(initial_ray, 0)
-            if not isinstance(incoming_color,type(np.array([0,0,0]))):
+            retorno = trace_path(initial_ray,0,1)
+            if retorno == -1.0:
                 continue
+            print("indirecta")
+            incoming_color=retorno[0]
             self.color += incoming_color
             rayosEfec+=1
         canvas[int(self.image.x)][int(self.image.y)] = self.color // (len(light_sources) + rayosEfec)
@@ -98,39 +131,56 @@ def render():
             t.start()
     e=time.time()
     print(e-s)
-def trace_path(rayo_actual, depth):
+def trace_path(rayo_actual,depth,maxdepth):
     # TODO FALTA IMPLEMENTAR ESTA FUNCION
+    if depth > maxdepth:
+        return -1.0
     info_intersec=hitSomething(rayo_actual)
     punto = info_intersec[0]
-    constanteIntensi=1
+    pared=info_intersec[1]
     if punto == -1.0:
         return -1
-    pared=info_intersec[1]
+    #Se calcula un rebote especular
+    distanciaPixWall = getLenght(rayo_actual.origen,punto)
     if pared.especularidad:
-        constanteIntensi+=0.4
-    distanciaPixWall=getLenght(rayo_actual.origen,punto)
-    for source in light_sources:
-        direccion=punto-source
-        ray=Ray(source,0)
-        ray.direccion=direccion
-        info_intersec2=hitSomething(rayo_actual)
-        punto=info_intersec2[0]
-        if info_intersec2[1].horizontal:
-            if  not (punto.y > source.y and punto.y > rayo_actual.origen.y) or not (punto.y < source.y and punto.y < rayo_actual.origen.y):
-                return -1.0
-        else:
-            if  not (punto.x > source.x and punto.x > rayo_actual.origen.x) or not (punto.x < source.x and punto.x < rayo_actual.origen.x):
-                return  -1.0
-        if info_intersec2[0].x==punto.x and info_intersec2[0].y == punto.y:
+        print("rebote especular")
+        a=trace_path(Ray(punto,anguloEspecular(rayo_actual,punto,pared)),depth+1,1)
+        if a == -1.0:
+            print("no funciona x´d")
+            return -1.0
+        print("funciona xd")
+        distanciatotal = a[1] + distanciaPixWall
+        intensidad = (3 - (distanciatotal / 500)) ** 2
+        colorWall2 = np.array([color / 100 for color in imagen[int(punto.y)][int(punto.x)][:3]])
+        refpix = imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
+        values = refpix * intensidad * colorWall2
+        return [values, distanciatotal]
+    else:
+        for source in light_sources:
+            direccion = punto-source
+            ray = Ray(source, 0)
+            ray.direccion = direccion
+            info_intersec2 = hitSomething(rayo_actual)
+            punto = info_intersec2[0]
+            print("llego aquí")
+            if info_intersec2[1].horizontal:
+                if  not (punto.y > source.y and punto.y > rayo_actual.origen.y) or not (punto.y < source.y and punto.y < rayo_actual.origen.y):
+                    return -1.0
+            else:
+                if  not (punto.x > source.x and punto.x > rayo_actual.origen.x) or not (punto.x < source.x and punto.x < rayo_actual.origen.x):
+                    return  -1.0
+            print("lleg+o ")
+            if info_intersec2[0].x==punto.x and info_intersec2[0].y == punto.y:
 
-            distanciaWallSource=getLenght(ray.origen,info_intersec2[0])
-            distanciatotal=distanciaPixWall+distanciaWallSource
-            intensidad =(constanteIntensi - (distanciatotal / 500)) ** 2
-            colorWall2=np.array([color/100 for color in imagen[int(punto.y)][int(punto.x)][:3] ])
-            refpix=imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
-            values = refpix * intensidad * colorWall2
-            return values
-        return -1.0
+                distanciaWallSource=getLenght(ray.origen,info_intersec2[0])
+                distanciatotal=distanciaPixWall + distanciaWallSource
+                intensidad =(1 - (distanciatotal / 500)) ** 2
+                colorWall2=np.array([color/100 for color in imagen[int(punto.y)][int(punto.x)][:3] ])
+                refpix=imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
+                values = refpix * intensidad * colorWall2
+                print("retorno correcto")
+                return [values,distanciatotal]
+            return -1.0
 
 
 
