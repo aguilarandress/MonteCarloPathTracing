@@ -167,7 +167,7 @@ if __name__ == "__main__":
         Segment(Point(180, 250), Point(180, 135), False, False),
     ]
     path_trace_depth = 50
-    number_samples = 25
+    number_samples = 50
     # Setup de los threads
     t = threading.Thread(target=render)
     t.setDaemon(True)
