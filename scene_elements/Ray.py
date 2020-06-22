@@ -5,8 +5,7 @@ from helpers import vector_from_angle, normalize
 class Ray:
     def __init__(self, origen, angle):
         self.origen = origen
-        self.direccion = vectorFromAngle(angle, origen)
-
+        self.direccion = vector_from_angle(angle, origen)
     def raySegmentIntersect(self, segmento):
         # calculate vectors
         v1 = self.origen - segmento.point1
