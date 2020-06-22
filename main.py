@@ -11,48 +11,6 @@ from helpers import length, ray_segment_intersect, normalize
 from threading import Thread
 import time
 from helpers import getLenght
-class threadCicloy(Thread):
-    def __init__(self,i):
-        Thread.__init__(self)
-        self.i=i
-    def run(self):
-        for j in range(len(canvas)):
-            # Obtener punto en la imagen
-            image_point = Point(self.i, j)
-            pixel_color = 0
-            for light_source in light_sources:
-                # Calcular direccion a la
-                direccion = light_source - image_point
-                light_distance = length(direccion)
-                # Verificar con interseccion en la pared
-                free = True
-                for wall in segments:
-                    # Revisar interseccion
-                    distancia_interseccion = ray_segment_intersect(
-                        image_point, normalize(direccion), wall.point1, wall.point2)
-                    # Verificar colision
-                    if distancia_interseccion != -1.0 and distancia_interseccion < light_distance:
-                        free = False
-                        break
-                # Verificar si no hay colision
-                if free:
-                    # Calcular intensidad
-                    intensidad = (1.2 - (light_distance / 500)) ** 2
-                    # Obtener color del pixel
-                    valores = (imagen[int(image_point.y)]
-                               [int(image_point.x)])[:3]
-                    # Combinar color, fuente de luz y color de la luz
-                    valores = valores * intensidad * light_color
-
-                    # Agregar todas las fuentes de luz
-                    pixel_color += valores
-                # Promedia pixel y asignar valor
-                canvas[int(image_point.x)][int(image_point.y)
-                                           ] = pixel_color // len(light_sources)
-
-            #TODO PATH TRACING O ILUMINACION INDIRECTA
-            t = threadPATH(image_point,pixel_color)
-            t.start()
 class threadPATH(Thread):
     mismopunto = 0
     def __init__(self,image_point,pixel_color):
@@ -74,6 +32,7 @@ class threadPATH(Thread):
             if not isinstance(incoming_color,type(np.array([0,0,0]))):
                 continue
             self.color += incoming_color
+            print(incoming_color)
             rayosEfec+=1
         canvas[int(self.image.x)][int(self.image.y)] = self.color // (len(light_sources) + rayosEfec)
 
@@ -112,6 +71,8 @@ def render():
                 # Verificar con interseccion en la pared
                 free = True
                 for wall in segments:
+                    if wall.transparencia:
+                        continue
                     # Revisar interseccion
                     distancia_interseccion = ray_segment_intersect(
                         image_point, normalize(direccion), wall.point1, wall.point2)

@@ -5,10 +5,10 @@ class Segment:
     """Clase para representar un segmento en la imagen
     """
 
-    def __init__(self, point1, point2,horizontal,especularidad=False):
+    def __init__(self, point1, point2,horizontal,transparencia=False):
         self.point1 = point1
         self.point2 = point2
-        self.especularidad = especularidad
+        self.transparencia = transparencia
         self.horizontal=horizontal
 
     def getPoint1(self):
