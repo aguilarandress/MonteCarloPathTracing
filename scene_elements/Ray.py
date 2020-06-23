@@ -25,10 +25,9 @@ class Ray:
         return -1.0
 
     def getRayIntersectionPoint(self, dist):
-        normalized_dir = normalize(self.direccion)
         pt = Point()
-        pt.x = self.origen.x + normalized_dir.x * dist
-        pt.y = self.origen.y + normalized_dir.y * dist
+        pt.x = self.origen.x + self.direccion.x * dist
+        pt.y = self.origen.y + self.direccion.y * dist
         return pt
 
     def cast(self, segment):

@@ -3,7 +3,7 @@ from scene_elements.Point import Point
 
 
 def vector_from_angle(angle, origen):
-    return Point(1 * math.cos(angle), 1 * math.sin(angle))
+    return normalize(Point(1 * math.cos(angle), 1 * math.sin(angle)))
 
 
 def length(v1):

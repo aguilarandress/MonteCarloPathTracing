@@ -104,7 +104,7 @@ def trace_path(rayo_actual, depth):
             continue
         #TODO
         #NO SÉ POR QUÉ , PERO ESTA CHANCHADA ARREGLÓ ESTO, revisar dirección
-        if (abs(int(punto2.x)-int(punto.x))<30) and (abs(int(punto2.y)-int(punto.y)<30)) :
+        if (int(punto2.x)==int(punto.x)) and int(punto2.y)==int(punto.y) :
             if info_intersec2[1].horizontal:
                 if not ((punto2.y > source.y and punto2.y > rayo_actual.origen.y) or (
                         punto2.y < source.y and punto2.y < rayo_actual.origen.y)):
@@ -152,85 +152,85 @@ if __name__ == "__main__":
     blank = Image.new("RGB", (500, 500), (0, 0, 0))
     canvas = np.array(blank)
     # Load image file
-    img_file = Image.open("assets/Terraria.png")
+    img_file = Image.open("assets/roomBleed.png")
     imagen = np.array(img_file)
     light_sources = [
-        # Point(195, 200), Point( 294, 200)
-                    Point(75, 424),Point(283, 427),Point(473, 424),
-                     Point(75,328),Point(282,329),Point(473,328),
-
-                     Point(29,473), Point(32,473),  Point(24,468)]
+        Point(195, 200), Point( 294, 200)]
+        #             Point(75, 424),Point(283, 427),Point(473, 424),
+        #              Point(75,328),Point(282,329),Point(473,328),
+        #
+        #              Point(29,473), Point(32,473),  Point(24,468)]
 
     # Color de la luz
     light_color = np.array([1, 1, 0.75])
     segments = [
-        # Segment(Point(180, 135), Point(215, 135), True, False),
-        # Segment(Point(285, 135), Point(320, 135), True, False),
-        # Segment(Point(320, 135), Point(320, 280), False, False),
-        # Segment(Point(320, 320), Point(320, 355), False, False),
-        # Segment(Point(320, 355), Point(215, 355), True, False),
-        # Segment(Point(180, 390), Point(180, 286), False, False),
-        # Segment(Point(180, 286), Point(140, 286), True, False),
-        # Segment(Point(320, 320), Point(360, 320), True, False),
-        # Segment(Point(180, 250), Point(180, 135), False, False),
+        Segment(Point(180, 135), Point(215, 135), True, False),
+        Segment(Point(285, 135), Point(320, 135), True, False),
+        Segment(Point(320, 135), Point(320, 280), False, False),
+        Segment(Point(320, 320), Point(320, 355), False, False),
+        Segment(Point(320, 355), Point(215, 355), True, False),
+        Segment(Point(180, 390), Point(180, 286), False, False),
+        Segment(Point(180, 286), Point(140, 286), True, False),
+        Segment(Point(320, 320), Point(360, 320), True, False),
+        Segment(Point(180, 250), Point(180, 135), False, False),
 
         #Primer Piso
-        # PISO 1
-        Segment(Point(62, 489), Point(487, 489), True, False),
-        # PARED IZQUIERDA
-        Segment(Point(62, 489), Point(62, 402), False, False),
-        # PARTE 1 TECHO PRIMER PISO
-        Segment(Point(62, 402), Point(111, 402), True, False),
-        # PARTE 2 TECHO PRIMER PISO
-        Segment(Point(150, 402), Point(486, 402), True, False),
-        # PARED DERECHA
-        Segment(Point(486, 402), Point(486, 489), False, False),
-        #Segundo piso
-        #Piso 1
-        Segment(Point(64, 392), Point(112, 392), True, False),
-        #Plataforma piso1
-        Segment(Point(112, 392), Point(112, 403), False, False),
-        #Plataforma de piso 1
-        Segment(Point(149, 392), Point(149, 403), False, False),
-        #Piso 2
-        Segment(Point(149, 392),  Point(485, 392), True, False),
-        #Pared piso 2 D
-        Segment(Point(486, 393), Point(486 , 307), False, False),
-        #Techo 1
-        Segment(Point(486, 307), Point(149, 307), True, False),
-        #Plataforma piso 2
-        Segment(Point(149, 307), Point(149, 296), False, False),
-        #Plataforma piso 2 I
-        Segment(Point(112, 296), Point(112, 307), False, False),
-        #Techo2
-        Segment(Point(112, 307), Point(64, 307), True, False),
-        #Pared piso 2 I
-        Segment(Point(64, 307), Point(64, 392), False, False),
-        #Tercer piso
-        #Piso1
-        Segment(Point(112, 296 ),Point(64, 296),True,False),
-        #Pared I
-        Segment(Point(64, 296), Point(64, 211), False, False),
-        #Techo
-        Segment(Point(64, 211), Point(486, 211), True, False),
-        #Pared D
-        Segment(Point(486, 211), Point(486, 296), False, False),
-        #Suelo2
-        Segment(Point(486, 296), Point(149, 296), True, False),
-        #exterior
-        #fogata
-        Segment(Point(0, 489), Point(57, 489), False, False),
-        # PARED IZQUIERDA AFUERA
-        Segment(Point(57, 489), Point(57, 203), False, False),
-        # TECHO ARRIBA
-        Segment(Point(57, 203), Point(492, 203), True, False),
-        # PARED DERECHA AFUERA
-        Segment(Point(492, 203), Point(492, 486), False, False)
+        # # PISO 1
+        # Segment(Point(62, 489), Point(487, 489), True, False),
+        # # PARED IZQUIERDA
+        # Segment(Point(62, 489), Point(62, 402), False, False),
+        # # PARTE 1 TECHO PRIMER PISO
+        # Segment(Point(62, 402), Point(111, 402), True, False),
+        # # PARTE 2 TECHO PRIMER PISO
+        # Segment(Point(150, 402), Point(486, 402), True, False),
+        # # PARED DERECHA
+        # Segment(Point(486, 402), Point(486, 489), False, False),
+        # #Segundo piso
+        # #Piso 1
+        # Segment(Point(64, 392), Point(112, 392), True, False),
+        # #Plataforma piso1
+        # Segment(Point(112, 392), Point(112, 403), False, False),
+        # #Plataforma de piso 1
+        # Segment(Point(149, 392), Point(149, 403), False, False),
+        # #Piso 2
+        # Segment(Point(149, 392),  Point(485, 392), True, False),
+        # #Pared piso 2 D
+        # Segment(Point(486, 393), Point(486 , 307), False, False),
+        # #Techo 1
+        # Segment(Point(486, 307), Point(149, 307), True, False),
+        # #Plataforma piso 2
+        # Segment(Point(149, 307), Point(149, 296), False, False),
+        # #Plataforma piso 2 I
+        # Segment(Point(112, 296), Point(112, 307), False, False),
+        # #Techo2
+        # Segment(Point(112, 307), Point(64, 307), True, False),
+        # #Pared piso 2 I
+        # Segment(Point(64, 307), Point(64, 392), False, False),
+        # #Tercer piso
+        # #Piso1
+        # Segment(Point(112, 296 ),Point(64, 296),True,False),
+        # #Pared I
+        # Segment(Point(64, 296), Point(64, 211), False, False),
+        # #Techo
+        # Segment(Point(64, 211), Point(486, 211), True, False),
+        # #Pared D
+        # Segment(Point(486, 211), Point(486, 296), False, False),
+        # #Suelo2
+        # Segment(Point(486, 296), Point(149, 296), True, False),
+        # #exterior
+        # #fogata
+        # Segment(Point(0, 489), Point(57, 489), False, False),
+        # # PARED IZQUIERDA AFUERA
+        # Segment(Point(57, 489), Point(57, 203), False, False),
+        # # TECHO ARRIBA
+        # Segment(Point(57, 203), Point(492, 203), True, False),
+        # # PARED DERECHA AFUERA
+        # Segment(Point(492, 203), Point(492, 486), False, False)
 
 
     ]
     path_trace_depth = 50
-    number_samples = 5
+    number_samples = 50
     # Setup de los threads
     t = threading.Thread(target=render)
     t.setDaemon(True)
