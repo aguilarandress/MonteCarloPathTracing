@@ -1,16 +1,15 @@
-import numpy as np
+import time
 import pygame
-import math
 import random
 import threading
+import numpy as np
 from PIL import Image
 from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
-from helpers import length, ray_segment_intersect, normalize
-from threading import Thread
-import time
-from helpers import getLenght
+from helpers import get_vector_length, get_length_between_points, ray_segment_intersect, normalize
+
+
 def hitSomething(ray):
     closest = -1.0
     hittedWall = None
@@ -41,7 +40,7 @@ def render():
             for light_source in light_sources:
                 # Calcular direccion a la
                 direccion = light_source - image_point
-                light_distance = length(direccion)
+                light_distance = get_vector_length(direccion)
                 # Verificar con interseccion en la pared
                 free = True
                 for wall in segments:
@@ -93,7 +92,7 @@ def trace_path(rayo_actual, depth):
     punto = info_intersec[0]
     if punto == -1.0:
         return -1
-    distanciaPixWall=getLenght(rayo_actual.origen,punto)
+    distanciaPixWall=get_length_between_points(rayo_actual.origen,punto)
     for source in light_sources:
         direccion=punto-source
         ray=Ray(source,0)
@@ -114,7 +113,7 @@ def trace_path(rayo_actual, depth):
                 if not ((punto2.x > source.x and punto2.x > rayo_actual.origen.x) or (
                         punto2.x < source.x and punto2.x < rayo_actual.origen.x)):
                     return -1.0
-            distanciaWallSource=getLenght(ray.origen,info_intersec2[0])
+            distanciaWallSource=get_length_between_points(ray.origen,info_intersec2[0])
             distanciatotal=distanciaPixWall+distanciaWallSource
             intensidad =(1 - (distanciatotal / 500)) ** 2
             colorWall2=np.array([color/100 for color in imagen[int(punto.y)][int(punto.x)][:3] ])

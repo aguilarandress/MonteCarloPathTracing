@@ -1,11 +1,11 @@
 from scene_elements.Point import Point
-from helpers import vector_from_angle, normalize
+from helpers import vector_from_angle
 
 
 class Ray:
     def __init__(self, origen, angle):
         self.origen = origen
-        self.direccion = vector_from_angle(angle, origen)
+        self.direccion = vector_from_angle(angle)
     def raySegmentIntersect(self, segmento):
         # calculate vectors
         v1 = self.origen - segmento.point1
