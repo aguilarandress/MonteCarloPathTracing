@@ -11,31 +11,6 @@ from helpers import length, ray_segment_intersect, normalize
 from threading import Thread
 import time
 from helpers import getLenght
-class threadPATH(Thread):
-    mismopunto = 0
-    def __init__(self,image_point,pixel_color):
-
-        """Initialize the thread"""
-        Thread.__init__(self)
-        self.color=pixel_color
-        self.image = image_point
-
-
-
-    def run(self):
-        rayosEfec=0
-        for i in range(0, number_samples):
-            # Iniciar rayos
-            initial_ray = Ray(self.image, random.uniform(0, 360))
-            # Iluminacion indirecta
-            incoming_color = trace_path(initial_ray, 0)
-            if not isinstance(incoming_color,type(np.array([0,0,0]))):
-                continue
-            self.color += incoming_color
-
-            rayosEfec+=1
-        canvas[int(self.image.x)][int(self.image.y)] = self.color // (len(light_sources) + rayosEfec)
-
 def hitSomething(ray):
     closest = -1.0
     hittedWall = None
@@ -49,7 +24,6 @@ def hitSomething(ray):
                 closest = point
                 hittedWall = wall
     return [closest, hittedWall]
-
 
 def render():
     """Renderiza la imagen con iluminacion
@@ -112,6 +86,7 @@ def render():
             canvas[int(image_point.x)][int(image_point.y)] = pixel_color // (len(light_sources) + rayosEfec)
     e=time.time()
     print(e-s)
+
 def trace_path(rayo_actual, depth):
     # TODO FALTA IMPLEMENTAR ESTA FUNCION
     info_intersec=hitSomething(rayo_actual)
