@@ -17,7 +17,7 @@ def get_vector_length(v1):
     :param v1: El vector
     :return: El largo enter (0, 0) y el punto del vector
     """
-    # Se asumen que el vector comienza en (0,0)
+    # Se asume que el vector comienza en (0,0)
     return math.sqrt(v1.x * v1.x + v1.y * v1.y)
 
 
@@ -27,7 +27,7 @@ def normalize(v1):
     :param v1: El vector que se desea normalizar
     :return: El vector normalizado
     """
-    # Se asumen que el vector comienza en (0,0)
+    # Se asume que el vector comienza en (0,0)
     v1 = v1 / (get_vector_length(v1) + 0.1)  # Se suma 0.1 para evitar divisiones entre 0
     return v1
 
