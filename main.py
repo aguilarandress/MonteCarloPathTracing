@@ -32,7 +32,7 @@ class threadPATH(Thread):
             if not isinstance(incoming_color,type(np.array([0,0,0]))):
                 continue
             self.color += incoming_color
-            print(incoming_color)
+
             rayosEfec+=1
         canvas[int(self.image.x)][int(self.image.y)] = self.color // (len(light_sources) + rayosEfec)
 
@@ -97,8 +97,19 @@ def render():
                                            ] = pixel_color // len(light_sources)
 
             #TODO PATH TRACING O ILUMINACION INDIRECTA
-            t = threadPATH(image_point,pixel_color)
-            t.start()
+            rayosEfec = 0
+
+            for p in range(0, number_samples):
+                # Iniciar rayos
+                initial_ray = Ray(image_point, random.uniform(0, 360))
+                # Iluminacion indirecta
+                incoming_color = trace_path(initial_ray, 0)
+                if not isinstance(incoming_color, type(np.array([0, 0, 0]))):
+                    continue
+                pixel_color += incoming_color
+
+                rayosEfec += 1
+            canvas[int(image_point.x)][int(image_point.y)] = pixel_color // (len(light_sources) + rayosEfec)
     e=time.time()
     print(e-s)
 def trace_path(rayo_actual, depth):
@@ -111,18 +122,23 @@ def trace_path(rayo_actual, depth):
     for source in light_sources:
         direccion=punto-source
         ray=Ray(source,0)
-        ray.direccion=direccion
-        info_intersec2=hitSomething(rayo_actual)
-        punto=info_intersec2[0]
-        if info_intersec2[1].horizontal:
-            if not ((punto.y > source.y and punto.y > rayo_actual.origen.y) or (punto.y < source.y and punto.y < rayo_actual.origen.y) ):
-                return -1.0
-        else:
-            if not ((punto.x > source.x and punto.x > rayo_actual.origen.x) or (
-                    punto.x < source.x and punto.x < rayo_actual.origen.x)):
-                return  -1.0
-        if info_intersec2[0].x==punto.x and info_intersec2[0].y == punto.y:
+        ray.direccion=normalize(direccion)
+        info_intersec2=hitSomething(ray)
+        punto2=info_intersec2[0]
+        if punto2==-1.0:
+            continue
+        #TODO
+        #NO SÉ POR QUÉ , PERO ESTA CHANCHADA ARREGLÓ ESTO, revisar dirección
+        if (abs(int(punto2.x)-int(punto.x))<30) and (abs(int(punto2.y)-int(punto.y)<30)) :
+            if info_intersec2[1].horizontal:
+                if not ((punto2.y > source.y and punto2.y > rayo_actual.origen.y) or (
+                        punto2.y < source.y and punto2.y < rayo_actual.origen.y)):
+                    return -1.0
 
+            else:
+                if not ((punto2.x > source.x and punto2.x > rayo_actual.origen.x) or (
+                        punto2.x < source.x and punto2.x < rayo_actual.origen.x)):
+                    return -1.0
             distanciaWallSource=getLenght(ray.origen,info_intersec2[0])
             distanciatotal=distanciaPixWall+distanciaWallSource
             intensidad =(1 - (distanciatotal / 500)) ** 2
@@ -132,7 +148,7 @@ def trace_path(rayo_actual, depth):
             refpix=imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
             values = refpix * intensidad * colorWall2
             return values
-
+    return  -1.0
 
 
 
@@ -163,10 +179,13 @@ if __name__ == "__main__":
     # Load image file
     img_file = Image.open("assets/Terraria.png")
     imagen = np.array(img_file)
-    light_sources = [Point(75, 424),Point(283, 427),Point(473, 424),
+    light_sources = [
+        # Point(195, 200), Point( 294, 200)
+                    Point(75, 424),Point(283, 427),Point(473, 424),
                      Point(75,328),Point(282,329),Point(473,328),
-                     Point(75, 253), Point(282, 253), Point(473, 253),
+
                      Point(29,473), Point(32,473),  Point(24,468)]
+
     # Color de la luz
     light_color = np.array([1, 1, 0.75])
     segments = [
