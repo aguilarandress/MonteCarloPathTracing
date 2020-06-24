@@ -1,38 +1,21 @@
-import numpy as np
+import time
 import pygame
-import math
 import random
 import threading
+import numpy as np
 from PIL import Image
 from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
-from helpers import length, ray_segment_intersect, normalize
-from threading import Thread
-import time
-from helpers import getLenght
-def hitSomething(ray):
-    closest = -1.0
-    hittedWall = None
-    record = 1000000000
-    for wall in segments:
-        point = ray.cast(wall)
-        if point != -1:
-            dist = ray.raySegmentIntersect(wall)
-            if dist < record:
-                record = dist
-                closest = point
-                hittedWall = wall
-    return [closest, hittedWall]
+from helpers import get_vector_length, get_length_between_points, ray_segment_intersect, normalize
+
 
 def render():
-    """Renderiza la imagen con iluminacion
+    """Renderiza la imagen con iluminacion global
 
-    Args:
-        canvas (Image): Imagen de la escena
-        samples (int): Numero de samples por pixel
+    :return:
     """
-    s=time.time()
+    s = time.time()
     for i in range(len(canvas)):
         for j in range(len(canvas)):
             # Obtener punto en la imagen
@@ -41,7 +24,7 @@ def render():
             for light_source in light_sources:
                 # Calcular direccion a la
                 direccion = light_source - image_point
-                light_distance = length(direccion)
+                light_distance = get_vector_length(direccion)
                 # Verificar con interseccion en la pared
                 free = True
                 for wall in segments:
@@ -67,65 +50,92 @@ def render():
                     # Agregar todas las fuentes de luz
                     pixel_color += valores
                 # Promedia pixel y asignar valor
-                canvas[int(image_point.x)][int(image_point.y)
-                                           ] = pixel_color // len(light_sources)
-
-            #TODO PATH TRACING O ILUMINACION INDIRECTA
-            rayosEfec = 0
-
-            for p in range(0, number_samples):
+                canvas[int(image_point.x)][int(image_point.y)] = pixel_color // len(light_sources)
+            # Realizar Monte Carlo Path tracing
+            rayos_efectivos = 0
+            for samples in range(0, number_samples):
                 # Iniciar rayos
                 initial_ray = Ray(image_point, random.uniform(0, 360))
                 # Iluminacion indirecta
                 incoming_color = trace_path(initial_ray, 0)
+                # Verificar si se obtiene un color
                 if not isinstance(incoming_color, type(np.array([0, 0, 0]))):
                     continue
                 pixel_color += incoming_color
+                rayos_efectivos += 1
+            # Promediar color final
+            canvas[int(image_point.x)][int(image_point.y)] = pixel_color // (len(light_sources) + rayos_efectivos)
+    e = time.time()
+    print(e - s)
 
-                rayosEfec += 1
-            canvas[int(image_point.x)][int(image_point.y)] = pixel_color // (len(light_sources) + rayosEfec)
-    e=time.time()
-    print(e-s)
 
 def trace_path(rayo_actual, depth):
-    # TODO FALTA IMPLEMENTAR ESTA FUNCION
-    info_intersec=hitSomething(rayo_actual)
-    punto = info_intersec[0]
+    """Se encarga de realizar el trazado de rayos para la iluminacion indirecta
+
+    :param rayo_actual: El rayo actual que se esta trazando
+    :param depth:
+    :return: El color calculado mediante el path tracing
+    """
+    # Check intersection point
+    info_interseccion = check_wall_intersection(rayo_actual)
+    punto = info_interseccion[0]
     if punto == -1.0:
         return -1
-    distanciaPixWall=getLenght(rayo_actual.origen,punto)
+    # Obtener distancia entre ambos puntos
+    distancia_interseccion = get_length_between_points(rayo_actual.origen, punto)
     for source in light_sources:
-        direccion=punto-source
-        ray=Ray(source,0)
-        ray.direccion=normalize(direccion)
-        info_intersec2=hitSomething(ray)
-        punto2=info_intersec2[0]
-        if punto2==-1.0:
+        # Crear rayo desde la fuente de luz hacia la interseccion
+        direccion = punto - source
+        ray = Ray(source,0)
+        ray.direccion = normalize(direccion)
+        # Verificar interseccion
+        info_light_interseccion = check_wall_intersection(ray)
+        punto2 = info_light_interseccion[0]
+        if punto2 == -1.0:
             continue
-        #TODO
-        #NO SÉ POR QUÉ , PERO ESTA CHANCHADA ARREGLÓ ESTO, revisar dirección
-        if (int(punto2.x)==int(punto.x)) and int(punto2.y)==int(punto.y) :
-            if info_intersec2[1].horizontal:
+        # Verificar que ambas intersecciones coincidan
+        if int(punto2.x) == int(punto.x) and int(punto2.y) == int(punto.y):
+            # Verificar que la fuente de luz y el pixel se encuentren en el mismo lado del segmento
+            if info_light_interseccion[1].horizontal:
                 if not ((punto2.y > source.y and punto2.y > rayo_actual.origen.y) or (
                         punto2.y < source.y and punto2.y < rayo_actual.origen.y)):
                     return -1.0
-
             else:
                 if not ((punto2.x > source.x and punto2.x > rayo_actual.origen.x) or (
                         punto2.x < source.x and punto2.x < rayo_actual.origen.x)):
                     return -1.0
-            distanciaWallSource=getLenght(ray.origen,info_intersec2[0])
-            distanciatotal=distanciaPixWall+distanciaWallSource
-            intensidad =(1 - (distanciatotal / 500)) ** 2
-            colorWall2=np.array([color/100 for color in imagen[int(punto.y)][int(punto.x)][:3] ])
-
-
-            refpix=imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
-            values = refpix * intensidad * colorWall2
+            # Calcular distancia total
+            distancia_light_segment = get_length_between_points(ray.origen, info_light_interseccion[0])
+            distancia_total = distancia_interseccion + distancia_light_segment
+            intensidad = (1 - (distancia_total / 500)) ** 2
+            # Calcular color nuevo
+            color_interseccion = np.array([color/100 for color in imagen[int(punto.y)][int(punto.x)][:3] ])
+            color_origen = imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
+            values = color_origen * intensidad * color_interseccion
             return values
     return  -1.0
 
 
+def check_wall_intersection(ray):
+    """Verifica si el rayo interseca con un segmento
+
+    :param ray: El rayo que se generando
+    :return: La interseccion con la pared
+    """
+    closest = -1.0
+    hitted_wall = None
+    record = 1000000000
+    # Check all segments
+    for wall in segments:
+        # Cast a new ray
+        point = ray.cast(wall)
+        if point != -1:
+            dist = ray.ray_segment_intersect(wall)
+            if dist < record:
+                record = dist
+                closest = point
+                hitted_wall = wall
+    return [closest, hitted_wall]
 
 
 def getFrame():
@@ -230,7 +240,7 @@ if __name__ == "__main__":
 
     ]
     path_trace_depth = 50
-    number_samples = 50
+    number_samples = 10
     # Setup de los threads
     t = threading.Thread(target=render)
     t.setDaemon(True)
