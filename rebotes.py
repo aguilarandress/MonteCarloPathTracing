@@ -39,8 +39,39 @@ def crear_rayo_aleatorio(ray, punto, pared):
 
 
 def crear_rayo_especular(ray, punto, pared):
-    get_angle_between(Segment(ray.origen, punto), pared)
-    pass
+    # Obtener angulo
+    angulo = np.rad2deg(get_angle_between(Segment(ray.origen, punto), pared))
+    if pared.horizontal:
+        # Por arriba
+        if ray.origen.y > punto.y:
+            # Por abajo
+            if ray.origen.x > punto.x:
+                return Ray(punto, math.radians(angulo - 180))
+            else:
+                return Ray(punto, math.radians(angulo))
+        else:
+            # Por la derecha
+            if ray.origen.x > punto.x:
+                return Ray(punto, math.radians(-(180 - angulo)))
+            else:
+                return Ray(punto, math.radians(angulo))
+            # Por la derecha
+    else:
+        # Vertical y por la derecha
+        if ray.origen.x > punto.x:
+            # Por arriba
+            if ray.origen.y > punto.y:
+                return Ray(punto, math.radians(-(180 - angulo)))
+            # Por abajo
+            else:
+                return Ray(punto, math.radians(angulo))
+        else:
+            # Por arriba
+            if ray.origen.y > punto.y:
+                return Ray(punto, math.radians(angulo - 180))
+            # Por abajo
+            else:
+                return Ray(punto, math.radians(angulo))
 
 
 def get_angle_between(segmento_rayo, segmento):

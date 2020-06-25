@@ -253,9 +253,9 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 done = True
         # Clear screen to white before drawing
-        screen.fill((0, 0, 0))
+        # screen.fill((0, 0, 0))
         npimage = getFrame()
         surface = pygame.surfarray.make_surface(npimage)
-        screen.blit(surface, (border, border))
+        # screen.blit(surface, (border, border))
         pygame.display.flip()
         clock.tick(60)
