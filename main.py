@@ -236,8 +236,6 @@ if __name__ == "__main__":
         # Segment(Point(57, 203), Point(492, 203), True, False),
         # # PARED DERECHA AFUERA
         # Segment(Point(492, 203), Point(492, 486), False, False)
-
-
     ]
     path_trace_depth = 50
     number_samples = 10

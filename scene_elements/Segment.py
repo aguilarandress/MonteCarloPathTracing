@@ -14,3 +14,11 @@ class Segment:
 
     def get_point2(self):
         return self.point2
+
+
+    def determinar_pendiente(self):
+        """Determina la pendiente del segmento
+
+        :return: La pendiente del segmento
+        """
+        return (self.point1.y - self.point2.y) / (self.point1.x - self.point2.x)

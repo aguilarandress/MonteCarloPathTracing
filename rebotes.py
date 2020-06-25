@@ -1,7 +1,9 @@
 import math
 import random
+import numpy as np
 from scene_elements.Ray import Ray
 from scene_elements.Point import Point
+from scene_elements.Segment import Segment
 
 
 def crear_rayo_aleatorio(ray, punto, pared):
@@ -37,5 +39,22 @@ def crear_rayo_aleatorio(ray, punto, pared):
 
 
 def crear_rayo_especular(ray, punto, pared):
-    # TODO Implementar esta funcion
+    get_angle_between(Segment(ray.origen, punto), pared)
     pass
+
+
+def get_angle_between(segmento_rayo, segmento):
+    # Determinar verticalidad de los segmentos
+    verticalidad_rayo = segmento_rayo.point1.x - segmento_rayo.point2.x == 0.0
+    verticalidad_segmento = segmento.point1.x - segmento.point2.x == 0
+    # Ambas lineas son verticales
+    # TODO Analizar esta situacion
+    if verticalidad_rayo and verticalidad_segmento:
+        return 0.0
+    # Verificar si alguna de las dos es vertical
+    if verticalidad_segmento or verticalidad_rayo:
+        segmento_no_vertical = segmento_rayo if verticalidad_segmento else segmento
+        return abs((90.0 * np.pi / 180.0) - np.arctan(segmento_no_vertical.determinar_pendiente()))
+    pendiente_rayo = segmento_rayo.determinar_pendiente()
+    pendiente_segmento = segmento.determinar_pendiente()
+    return np.arctan((pendiente_rayo - pendiente_segmento) / (1 + pendiente_rayo * pendiente_segmento))
