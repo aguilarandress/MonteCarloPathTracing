@@ -40,38 +40,42 @@ def crear_rayo_aleatorio(ray, punto, pared):
 
 def crear_rayo_especular(ray, punto, pared):
     # Obtener angulo
-    angulo = np.rad2deg(get_angle_between(Segment(ray.origen, punto), pared))
+    angulo = np.rad2deg(get_angle_between(Segment(ray.origen, punto,False,False), pared))
     if pared.horizontal:
         # Por arriba
         if ray.origen.y > punto.y:
+            # Por la derecha
+            if ray.origen.x > punto.x:
+                return Ray(Point(punto.x, punto.y + 2), math.radians(2*(90-angulo)+angulo))
+            else:
+                return Ray(Point(punto.x, punto.y + 2), math.radians(-angulo))
+            # Por la derecha
+        else:
             # Por abajo
             if ray.origen.x > punto.x:
-                return Ray(punto, math.radians(angulo - 180))
+
+                return Ray(Point(punto.x, punto.y - 2), math.radians(180-angulo))
             else:
-                return Ray(punto, math.radians(angulo))
-        else:
-            # Por la derecha
-            if ray.origen.x > punto.x:
-                return Ray(punto, math.radians(-(180 - angulo)))
-            else:
-                return Ray(punto, math.radians(angulo))
-            # Por la derecha
+
+                return Ray(Point(punto.x, punto.y - 2), math.radians(-(180+(angulo - 180))))
+
+
     else:
         # Vertical y por la derecha
         if ray.origen.x > punto.x:
             # Por arriba
             if ray.origen.y > punto.y:
-                return Ray(punto, math.radians(-(180 - angulo)))
+                return Ray(Point(punto.x + 2, punto.y), math.radians(-(180 - angulo)))
             # Por abajo
             else:
-                return Ray(punto, math.radians(angulo))
+                return Ray(Point(punto.x + 2, punto.y), math.radians(angulo))
         else:
             # Por arriba
             if ray.origen.y > punto.y:
-                return Ray(punto, math.radians(angulo - 180))
+                return Ray(Point(punto.x - 2, punto.y), math.radians(angulo - 180))
             # Por abajo
             else:
-                return Ray(punto, math.radians(angulo))
+                return Ray(Point(punto.x - 2, punto.y), math.radians(angulo))
 
 
 def get_angle_between(segmento_rayo, segmento):

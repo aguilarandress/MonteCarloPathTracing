@@ -1,6 +1,7 @@
 import time
 import pygame
 import random
+import math
 import threading
 import numpy as np
 from PIL import Image
@@ -8,6 +9,7 @@ from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
 from helpers import get_vector_length, get_length_between_points, ray_segment_intersect, normalize
+from rebotes import crear_rayo_especular
 
 
 def render():
@@ -15,58 +17,65 @@ def render():
 
     :return:
     """
-    s = time.time()
-    for i in range(len(canvas)):
-        for j in range(len(canvas)):
-            # Obtener punto en la imagen
-            image_point = Point(i, j)
-            pixel_color = 0
-            for light_source in light_sources:
-                # Calcular direccion a la
-                direccion = light_source - image_point
-                light_distance = get_vector_length(direccion)
-                # Verificar con interseccion en la pared
-                free = True
-                for wall in segments:
-                    if wall.transparencia:
-                        continue
-                    # Revisar interseccion
-                    distancia_interseccion = ray_segment_intersect(
-                        image_point, normalize(direccion), wall.point1, wall.point2)
-                    # Verificar colision
-                    if distancia_interseccion != -1.0 and distancia_interseccion < light_distance:
-                        free = False
-                        break
-                # Verificar si no hay colision
-                if free:
-                    # Calcular intensidad
-                    intensidad = (1.2 - (light_distance / 500)) ** 2
-                    # Obtener color del pixel
-                    valores = (imagen[int(image_point.y)]
-                               [int(image_point.x)])[:3]
-                    # Combinar color, fuente de luz y color de la luz
-                    valores = valores * intensidad * light_color
-
-                    # Agregar todas las fuentes de luz
-                    pixel_color += valores
-                # Promedia pixel y asignar valor
-                canvas[int(image_point.x)][int(image_point.y)] = pixel_color // len(light_sources)
-            # Realizar Monte Carlo Path tracing
-            rayos_efectivos = 0
-            for samples in range(0, number_samples):
-                # Iniciar rayos
-                initial_ray = Ray(image_point, random.uniform(0, 360))
-                # Iluminacion indirecta
-                incoming_color = trace_path(initial_ray, 0)
-                # Verificar si se obtiene un color
-                if not isinstance(incoming_color, type(np.array([0, 0, 0]))):
-                    continue
-                pixel_color += incoming_color
-                rayos_efectivos += 1
-            # Promediar color final
-            canvas[int(image_point.x)][int(image_point.y)] = pixel_color // (len(light_sources) + rayos_efectivos)
-    e = time.time()
-    print(e - s)
+    # s = time.time()
+    # for i in range(len(canvas)):
+    #     for j in range(len(canvas)):
+    #         # Obtener punto en la imagen
+    #         image_point = Point(i, j)
+    #         pixel_color = 0
+    #         for light_source in light_sources:
+    #             # Calcular direccion a la
+    #             direccion = light_source - image_point
+    #             light_distance = get_vector_length(direccion)
+    #             # Verificar con interseccion en la pared
+    #             free = True
+    #             for wall in segments:
+    #                 if wall.transparencia:
+    #                     continue
+    #                 # Revisar interseccion
+    #                 distancia_interseccion = ray_segment_intersect(
+    #                     image_point, normalize(direccion), wall.point1, wall.point2)
+    #                 # Verificar colision
+    #                 if distancia_interseccion != -1.0 and distancia_interseccion < light_distance:
+    #                     free = False
+    #                     break
+    #             # Verificar si no hay colision
+    #             if free:
+    #                 # Calcular intensidad
+    #                 intensidad = (1.2 - (light_distance / 500)) ** 2
+    #                 # Obtener color del pixel
+    #                 valores = (imagen[int(image_point.y)]
+    #                            [int(image_point.x)])[:3]
+    #                 # Combinar color, fuente de luz y color de la luz
+    #                 valores = valores * intensidad * light_color
+    #
+    #                 # Agregar todas las fuentes de luz
+    #                 pixel_color += valores
+    #             # Promedia pixel y asignar valor
+    #             canvas[int(image_point.x)][int(image_point.y)] = pixel_color // len(light_sources)
+    #         # Realizar Monte Carlo Path tracing
+    #         rayos_efectivos = 0
+    #         for samples in range(0, number_samples):
+    #             # Iniciar rayos
+    #             initial_ray = Ray(image_point, random.uniform(0, 360))
+    #             # Iluminacion indirecta
+    #             incoming_color = trace_path(initial_ray, 0)
+    #             # Verificar si se obtiene un color
+    #             if not isinstance(incoming_color, type(np.array([0, 0, 0]))):
+    #                 continue
+    #             pixel_color += incoming_color
+    #             rayos_efectivos += 1
+    #         # Promediar color final
+    #         canvas[int(image_point.x)][int(image_point.y)] = pixel_color // (len(light_sources) + rayos_efectivos)
+    # e = time.time()
+    # print(e - s)
+    rayo=Ray(light_sources[1], math.radians(110))
+    infointer=check_wall_intersection(rayo)
+    rayorebote=crear_rayo_especular(rayo,infointer[0],infointer[1])
+    puntofinal=check_wall_intersection(rayorebote)
+    pygame.draw.line(screen, [255, 255, 255], (int(rayo.origen.x), int(rayo.origen.y)), (int(infointer[0].x),int(infointer[0].y)), 1)
+    pygame.draw.line(screen, [255, 255, 0], (int(rayorebote.origen.x), int(rayorebote.origen.y)), (int(puntofinal[0].x), int(puntofinal[0].y)), 1)
+    print(rayorebote.origen,puntofinal[0])
 
 
 def trace_path(rayo_actual, depth):
@@ -174,6 +183,10 @@ if __name__ == "__main__":
     # Color de la luz
     light_color = np.array([1, 1, 0.75])
     segments = [
+        Segment(Point(0, 0), Point(500, 0), True, False),
+        Segment(Point(0, 0), Point(0, 500), False, False),
+        Segment(Point(0, 500), Point(500, 500), True, False),
+        Segment(Point(500, 500), Point(500, 0), False, False),
         Segment(Point(180, 135), Point(215, 135), True, False),
         Segment(Point(285, 135), Point(320, 135), True, False),
         Segment(Point(320, 135), Point(320, 280), False, False),
