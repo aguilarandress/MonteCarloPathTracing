@@ -1,6 +1,7 @@
 import time
 import pygame
 import random
+import math
 import threading
 import numpy as np
 from PIL import Image
@@ -8,6 +9,7 @@ from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
 from helpers import get_vector_length, get_length_between_points, ray_segment_intersect, normalize
+from rebotes import crear_rayo_especular
 
 
 def render():
@@ -69,6 +71,7 @@ def render():
     print(e - s)
 
 
+
 def trace_path(rayo_actual, depth):
     """Se encarga de realizar el trazado de rayos para la iluminacion indirecta
 
@@ -109,7 +112,8 @@ def trace_path(rayo_actual, depth):
             distancia_total = distancia_interseccion + distancia_light_segment
             intensidad = (1 - (distancia_total / 500)) ** 2
             # Calcular color nuevo
-            color_interseccion = np.array([color/100 for color in imagen[int(punto.y)][int(punto.x)][:3] ])
+            #TODO: Confirmar que el -1 se deba a los bordes de la imagen 
+            color_interseccion = np.array([color/100 for color in imagen[int(punto.y)-1][int(punto.x)-1][:3]])
             color_origen = imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
             values = color_origen * intensidad * color_interseccion
             return values
@@ -174,6 +178,7 @@ if __name__ == "__main__":
     # Color de la luz
     light_color = np.array([1, 1, 0.75])
     segments = [
+
         Segment(Point(180, 135), Point(215, 135), True, False),
         Segment(Point(285, 135), Point(320, 135), True, False),
         Segment(Point(320, 135), Point(320, 280), False, False),
@@ -236,8 +241,6 @@ if __name__ == "__main__":
         # Segment(Point(57, 203), Point(492, 203), True, False),
         # # PARED DERECHA AFUERA
         # Segment(Point(492, 203), Point(492, 486), False, False)
-
-
     ]
     path_trace_depth = 50
     number_samples = 10

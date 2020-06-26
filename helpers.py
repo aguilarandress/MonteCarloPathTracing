@@ -66,33 +66,3 @@ def ray_segment_intersect(origen, direccion, point1, point2):
     if (t1 >= 0.0 and (t2 >= 0.0 and t2 <= 1.0)):
         return t1
     return -1.0
-
-# def angulo_rebote(ray, punto, pared):
-#     """Genera un anglo aleatorio en el segmento
-#
-#     Args:
-#         ray (Ray): El rayo de entrada
-#         punto (Point): Punto de interseccion en el segmento
-#         pared (Segment): Segmento de interseccion
-#
-#     Returns:
-#         Ray: Un nuevo rayo con origen y angulo aleatorio
-#     """
-#     if pared.horizontal:
-#         if ray.origen.y > punto.y:
-#             # pared inferior
-#             angulo = math.radians(random.uniform(5, 175))
-#             return Ray(Point(punto.x, punto.y + 2), angulo)
-#         else:
-#             # pared superior
-#             angulo = math.radians(random.uniform(-175, -5))
-#             return Ray(Point(punto.x, punto.y - 2), angulo)
-#     else:
-#         if ray.origen.x < punto.x:
-#             # pared derecha
-#             angulo = math.radians(random.uniform(-270, -90))
-#             return Ray(Point(punto.x - 2, punto.y), angulo)
-#         else:
-#             # pared izquierda
-#             angulo = math.radians(random.uniform(-85, 85))
-#             return Ray(Point(punto.x + 2, punto.y), angulo)
