@@ -69,7 +69,7 @@ def render():
     #         canvas[int(image_point.x)][int(image_point.y)] = pixel_color // (len(light_sources) + rayos_efectivos)
     # e = time.time()
     # print(e - s)
-    rayo=Ray(light_sources[1], math.radians(110))
+    rayo=Ray(light_sources[1], math.radians(200))
     infointer=check_wall_intersection(rayo)
     rayorebote=crear_rayo_especular(rayo,infointer[0],infointer[1])
     puntofinal=check_wall_intersection(rayorebote)

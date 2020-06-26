@@ -65,17 +65,21 @@ def crear_rayo_especular(ray, punto, pared):
         if ray.origen.x > punto.x:
             # Por arriba
             if ray.origen.y > punto.y:
-                return Ray(Point(punto.x + 2, punto.y), math.radians(-(180 - angulo)))
+                print("soy yo bro")
+                print(angulo)
+                return Ray(Point(punto.x + 2, punto.y), math.radians(-(90-angulo)))
             # Por abajo
             else:
-                return Ray(Point(punto.x + 2, punto.y), math.radians(angulo))
+                print("entro aquí bro")
+                print(angulo)
+                return Ray(Point(punto.x + 2, punto.y), math.radians(-(90-angulo)))
         else:
-            # Por arriba
-            if ray.origen.y > punto.y:
-                return Ray(Point(punto.x - 2, punto.y), math.radians(angulo - 180))
             # Por abajo
+            if ray.origen.y > punto.y:
+                return Ray(Point(punto.x - 2, punto.y), math.radians(angulo+90))
+            # Por arriba
             else:
-                return Ray(Point(punto.x - 2, punto.y), math.radians(angulo))
+                return Ray(Point(punto.x - 2, punto.y), math.radians(angulo+90))
 
 
 def get_angle_between(segmento_rayo, segmento):
