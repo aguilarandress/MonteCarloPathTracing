@@ -58,19 +58,14 @@ def crear_rayo_especular(ray, punto, pared):
             else:
 
                 return Ray(Point(punto.x, punto.y - 2), math.radians(-(180+(angulo - 180))))
-
-
     else:
         # Vertical y por la derecha
         if ray.origen.x > punto.x:
             # Por arriba
             if ray.origen.y > punto.y:
-                print("soy yo bro")
-                print(angulo)
                 return Ray(Point(punto.x + 2, punto.y), math.radians(-(90-angulo)))
             # Por abajo
             else:
-                print("entro aquí bro")
                 print(angulo)
                 return Ray(Point(punto.x + 2, punto.y), math.radians(-(90-angulo)))
         else:
