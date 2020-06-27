@@ -81,13 +81,27 @@ def trace_path(rayo_actual, depth):
     # Check intersection point
     info_interseccion = check_wall_intersection(rayo_actual)
     punto = info_interseccion[0]
+    pared=info_interseccion[1]
     if punto == -1.0:
         return -1
     # Obtener distancia entre ambos puntos
+    intensidad_inicial = 1
     distancia_interseccion = get_length_between_points(rayo_actual.origen, punto)
     for source in light_sources:
+        puntointerseccion=punto
+        if(pared.especularidad):
+            rayoEspec=crear_rayo_especular(rayo_actual,punto,pared)
+            rayo_actual=rayoEspec
+            infoEspecular=check_wall_intersection(rayoEspec)
+            puntoInterEspec=infoEspecular[0]
+            if puntoInterEspec == -1:
+                return -1.0
+            distancia_interseccion=distancia_interseccion + get_length_between_points(punto, puntoInterEspec)
+            puntointerseccion=puntoInterEspec
+            intensidad_inicial=1.3
+
         # Crear rayo desde la fuente de luz hacia la interseccion
-        direccion = punto - source
+        direccion = puntointerseccion - source
         ray = Ray(source,0)
         ray.direccion = normalize(direccion)
         # Verificar interseccion
@@ -96,7 +110,7 @@ def trace_path(rayo_actual, depth):
         if punto2 == -1.0:
             continue
         # Verificar que ambas intersecciones coincidan
-        if int(punto2.x) == int(punto.x) and int(punto2.y) == int(punto.y):
+        if int(punto2.x) == int(puntointerseccion.x) and int(punto2.y) == int(puntointerseccion.y):
             # Verificar que la fuente de luz y el pixel se encuentren en el mismo lado del segmento
             if info_light_interseccion[1].horizontal:
                 if not ((punto2.y > source.y and punto2.y > rayo_actual.origen.y) or (
@@ -109,12 +123,12 @@ def trace_path(rayo_actual, depth):
             # Calcular distancia total
             distancia_light_segment = get_length_between_points(ray.origen, info_light_interseccion[0])
             distancia_total = distancia_interseccion + distancia_light_segment
-            intensidad = (1 - (distancia_total / 500)) ** 2
+            intensidad = (intensidad_inicial - (distancia_total / 500)) ** 2
             # Calcular color nuevo
-            #TODO: Confirmar que el -1 se deba a los bordes de la imagen 
-            color_interseccion = np.array([color/100 for color in imagen[int(punto.y)-1][int(punto.x)-1][:3]])
-            color_origen = imagen[rayo_actual.origen.y][rayo_actual.origen.x][:3]
-            values = color_origen * intensidad * color_interseccion
+            #TODO: Confirmar que el -1 se deba a los bordes de la imagen
+            color_interseccion = np.array([color/150 for color in imagen[int(punto.y)-1][int(punto.x)-1][:3]])
+            color_origen = imagen[int(rayo_actual.origen.y)][int(rayo_actual.origen.x)][:3]
+            values = color_origen * intensidad * (color_interseccion * light_color)
             return values
     return  -1.0
 
@@ -182,7 +196,7 @@ if __name__ == "__main__":
         Segment(Point(320, 320), Point(320, 355), False, False),
         Segment(Point(320, 355), Point(215, 355), True, False),
         Segment(Point(180, 390), Point(180, 286), False, False),
-        Segment(Point(180, 286), Point(140, 286), True, False),
+        Segment(Point(180, 286), Point(140, 286), True, False,True),
         Segment(Point(320, 320), Point(360, 320), True, False),
         Segment(Point(180, 250), Point(180, 135), False, False),
 
@@ -240,7 +254,7 @@ if __name__ == "__main__":
         # Segment(Point(492, 203), Point(492, 486), False, False)
     ]
     path_trace_depth = 50
-    number_samples = 10
+    number_samples = 30
     # Setup de los threads
     t = threading.Thread(target=render)
     t.setDaemon(True)
