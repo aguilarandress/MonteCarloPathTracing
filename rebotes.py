@@ -16,7 +16,6 @@ def crear_rayo_aleatorio(ray, punto, pared):
     """
     # Verificar especularidad
     if pared.especularidad:
-        # TODO Implementar especularidad aqui
         return crear_rayo_especular(ray, punto, pared)
     if pared.horizontal:
         if ray.origen.y > punto.y:
@@ -38,7 +37,15 @@ def crear_rayo_aleatorio(ray, punto, pared):
             return Ray(Point(punto.x + 2, punto.y), angulo)
 
 
+# TODO: Verificar que sucede si ambas rectas son perpendiculares
 def crear_rayo_especular(ray, punto, pared):
+    """Crea un rayo especular
+
+    :param ray: El rayo saliente
+    :param punto: El punto de interseccion del rayo
+    :param pared: La pared de interseccion
+    :return: El rayo especular
+    """
     # Obtener angulo
     angulo = np.rad2deg(get_angle_between(Segment(ray.origen, punto,False,False), pared))
     if pared.horizontal:
@@ -78,11 +85,16 @@ def crear_rayo_especular(ray, punto, pared):
 
 
 def get_angle_between(segmento_rayo, segmento):
+    """Obtiene el angulo entre dos rectas
+
+    :param segmento_rayo: El segmento que creado a partir del rayo
+    :param segmento: El segmento de interseccion
+    :return: El angulo entre ambas rectas
+    """
     # Determinar verticalidad de los segmentos
     verticalidad_rayo = segmento_rayo.point1.x - segmento_rayo.point2.x == 0.0
     verticalidad_segmento = segmento.point1.x - segmento.point2.x == 0
     # Ambas lineas son verticales
-    # TODO Analizar esta situacion
     if verticalidad_rayo and verticalidad_segmento:
         return 0.0
     # Verificar si alguna de las dos es vertical

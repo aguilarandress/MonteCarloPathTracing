@@ -1,15 +1,14 @@
 import time
 import pygame
 import random
-import math
 import threading
 import numpy as np
 from PIL import Image
 from scene_elements.Point import Point
 from scene_elements.Segment import Segment
 from scene_elements.Ray import Ray
-from helpers import get_vector_length, get_length_between_points, ray_segment_intersect, normalize
 from rebotes import crear_rayo_especular
+from helpers import get_vector_length, get_length_between_points, ray_segment_intersect, normalize
 
 
 def render():
@@ -150,11 +149,9 @@ def getFrame():
 # MAIN PROGRAM
 if __name__ == "__main__":
     # Crear ventana
-
     HEIGHT, WIDTH = 550, 550
     border = 50
     pygame.init()
-    # window = pygame.display.set_mode((600, 600))
     screen = pygame.display.set_mode(
         (WIDTH + (2 * border), HEIGHT + (2 * border)))
     # Segmentos y fuentes
