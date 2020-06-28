@@ -60,7 +60,6 @@ def crear_rayo_especular(ray, punto, pared):
         else:
             # Por abajo
             if ray.origen.x > punto.x:
-
                 return Ray(Point(punto.x, punto.y - 2), math.radians(180-angulo))
             else:
 
