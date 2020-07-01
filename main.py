@@ -145,6 +145,9 @@ def check_wall_intersection(ray):
     record = 1000000000
     # Check all segments
     for wall in segments:
+        # Transparencia
+        if wall.transparencia:
+            continue
         # Cast a new ray
         point = ray.cast(wall)
         if point != -1:
