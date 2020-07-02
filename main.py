@@ -17,8 +17,9 @@ def render():
     :return:
     """
     s = time.time()
-    for i in range(len(canvas)):
-        for j in range(len(canvas)):
+    for i in range(515):
+
+        for j in range(515):
             # Obtener punto en la imagen
             image_point = Point(i, j)
             pixel_color = 0
@@ -41,7 +42,7 @@ def render():
                 # Verificar si no hay colision
                 if free:
                     # Calcular intensidad
-                    intensidad = (1.2 - (light_distance / 500)) ** 2
+                    intensidad = (1.2 - (light_distance / 600)) ** 2
                     # Obtener color del pixel
                     valores = (imagen[int(image_point.y)]
                                [int(image_point.x)])[:3]
@@ -64,7 +65,7 @@ def render():
                     continue
                 pixel_color += incoming_color
                 rayos_efectivos += 1
-            # Promediar color final
+            #Promediar color final
             canvas[int(image_point.x)][int(image_point.y)] = pixel_color // (len(light_sources) + rayos_efectivos)
     e = time.time()
     print(e - s)
@@ -125,7 +126,7 @@ def trace_path(rayo_actual):
             # Calcular distancia total
             distancia_light_segment = get_length_between_points(ray.origen, info_light_interseccion[0])
             distancia_total = distancia_interseccion + distancia_light_segment
-            intensidad = (intensidad_inicial - (distancia_total / 500)) ** 2
+            intensidad = (intensidad_inicial - (distancia_total / 600)) ** 2
             # Calcular color nuevo
             color_interseccion = np.array([color / 190 for color in imagen[int(punto.y) - 1][int(punto.x) - 1][:3]])
             color_origen = imagen[int(rayo_actual.origen.y)][int(rayo_actual.origen.x)][:3]
@@ -145,6 +146,8 @@ def check_wall_intersection(ray):
     record = 1000000000
     # Check all segments
     for wall in segments:
+        if wall.transparencia:
+            continue
         # Cast a new ray
         point = ray.cast(wall)
         if point != -1:
@@ -164,7 +167,7 @@ def getFrame():
 # MAIN PROGRAM
 if __name__ == "__main__":
     # Crear ventana
-    HEIGHT, WIDTH = 550, 550
+    HEIGHT, WIDTH = 600, 600
     border = 50
     pygame.init()
     screen = pygame.display.set_mode(
@@ -175,33 +178,93 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
     # Init random
     random.seed()
-    blank = Image.new("RGB", (500, 500), (0, 0, 0))
+    blank = Image.new("RGB", (516, 516), (0, 0, 0))
     canvas = np.array(blank)
     # Load image file
-    img_file = Image.open("assets/roomBleed.png")
+    img_file = Image.open("assets/EscenaProgra.png")
     imagen = np.array(img_file)
-    light_sources = [Point(195, 200), Point(294, 200)]
+    light_sources = [Point(47, 303), Point(47, 142), Point(475, 76)]
     # Color de la luz
     light_color = np.array([1, 1, 0.75])
     segments = [
-        Segment(Point(180, 135), Point(215, 135), True, False),
-        Segment(Point(285, 135), Point(320, 135), True, False),
-        Segment(Point(320, 135), Point(320, 280), False, False),
-        Segment(Point(320, 320), Point(320, 355), False, False),
-        Segment(Point(320, 355), Point(215, 355), True, False),
-        Segment(Point(180, 390), Point(180, 286), False, False),
-        Segment(Point(180, 286), Point(140, 286), True, False,True),
-        Segment(Point(320, 320), Point(360, 320), True, False),
-        Segment(Point(180, 250), Point(180, 135), False, False),
+        # Segment(Point(180, 135), Point(215, 135), True, False),
+        # Segment(Point(285, 135), Point(320, 135), True, False),
+        # Segment(Point(320, 135), Point(320, 280), False, False),
+        # Segment(Point(320, 320), Point(320, 355), False, False),
+        # Segment(Point(320, 355), Point(215, 355), True, False),
+        # Segment(Point(180, 390), Point(180, 286), False, False),
+        # Segment(Point(180, 286), Point(140, 286), True, False,True),
+        # Segment(Point(320, 320), Point(360, 320), True, False),
+        # Segment(Point(180, 250), Point(180, 135), False, False),
+
+
+        #Escena rpgmaker
+        #Sala principal
+        Segment(Point(26, 355), Point(242, 355),True,False),
+        Segment(Point(242, 355), Point(242, 516), False, False),
+        Segment(Point(272, 516), Point(272, 355), False, False),
+        Segment(Point(272, 355), Point(490, 355), True, False),
+        Segment(Point(490, 355), Point(490, 226), False, False),
+        Segment(Point(490, 226), Point(435, 226), True, False),
+        Segment(Point(435, 226), Point(435, 194), False, False),
+        Segment(Point(406, 226), Point(406, 194), False, False),
+        Segment(Point(406, 226), Point(350, 226), True,False),
+        #ESPEJO Derecha
+        Segment(Point(350, 226), Point(165, 226), True, False,True),
+        Segment(Point(165, 226), Point(110, 226), True, False),
+        Segment(Point(110, 226), Point(110, 194), False, False),
+        Segment(Point(79, 226), Point(79, 194), False, False),
+        Segment(Point(79, 226), Point(26, 226), True, False),
+        Segment(Point(26, 226), Point(26, 355), False, False),
+        #Comienza sala librería
+        Segment(Point(80, 194), Point(26, 194), True, False),
+        #libreria izquierda
+        Segment(Point(26, 194), Point(26, 48), False, False),
+        #Librerias horizontal
+        Segment(Point(26, 48), Point(327, 48), True, False),
+        Segment(Point(327, 48), Point(327, 64), False, False),
+        #Segmento hielo librerias
+        Segment(Point(327, 64), Point(327, 167), False,True),
+        Segment(Point(327, 160), Point(327, 195), False, False),
+        Segment(Point(327, 195), Point(188, 195), True, False),
+        Segment(Point(188, 195), Point(188, 130), False, False),
+        Segment(Point(188, 130), Point(164, 130), True, False),
+        Segment(Point(164, 130), Point(164, 195), False, False),
+        Segment(Point(164, 195), Point(110, 195), True, False),
+        #Comienza sala dragón
+        Segment(Point(435, 194), Point(490, 194), True, False),
+        Segment(Point(490, 194), Point(490, 37), False, False),
+        Segment(Point(490, 37), Point(351, 37), True, False),
+        Segment(Point(351, 37), Point(351, 64), False, False),
+        #Segmento hielo dragón
+        Segment(Point(351, 64), Point(351, 162), False, True),
+        Segment(Point(327, 160), Point(351, 160), True, False),
+        Segment(Point(327, 64), Point(351, 64), True, False),
+        Segment(Point(351, 162), Point(351, 194), False, False),
+        Segment(Point(351, 194), Point(406, 194), True, False),
+
+
     ]
-    number_samples = 30
+    number_samples = 10
     # Setup de los threads
     t = threading.Thread(target=render)
     t.setDaemon(True)
     t.start()
     # Main loop
     for segment in segments:
-        pygame.draw.line(screen,[255,255,255],(segment.point1.x,segment.point1.y),(segment.point2.x,segment.point2.y),2)
+        if segment.especularidad:
+            pygame.draw.line(screen,[100,255,30],(segment.point1.x,segment.point1.y),(segment.point2.x,segment.point2.y),2)
+        elif segment.transparencia:
+            pygame.draw.line(screen,[100,50,200],(segment.point1.x,segment.point1.y),(segment.point2.x,segment.point2.y),2)
+
+
+        else:
+            if segment.horizontal:
+                pygame.draw.line(screen, [255, 6, 50], (segment.point1.x, segment.point1.y),
+                                 (segment.point2.x, segment.point2.y), 2)
+            else:
+
+                pygame.draw.line(screen,[255,255,255],(segment.point1.x,segment.point1.y),(segment.point2.x,segment.point2.y),2)
     for lig in light_sources:
         pygame.draw.circle(screen,[50,0,20],(lig.x,lig.y),5)
     while not done:
